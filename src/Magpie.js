@@ -378,8 +378,8 @@ export default class Magpie extends EventEmitter {
    * @public
    * @returns {Object[]}
    */
-  getAllData() {
-    return {
+  _getAllData() {
+    return flattenData({
       ...this.expData,
       //experiment_end_time: Date.now(),
       //experiment_duration: Date.now() - this.expData.experiment_start_time,
@@ -403,7 +403,7 @@ export default class Magpie extends EventEmitter {
           )
         )
       ) // clone the data
-    };
+    });
   }
 
   /**
@@ -527,7 +527,7 @@ const addEmptyColumns = function (trialData) {
   return trialData;
 };
 
-const flattenData = function (data) {
+const _flattenData = function (data) {
   var trials = data.trials;
   delete data.trials;
 
@@ -555,4 +555,37 @@ const flattenData = function (data) {
     // Here the data is the general informatoin besides the trials.
     return merge(t, data);
   });
+};
+
+getAllData() {
+  const expDataWithMeta = {
+    ...this.expData,
+    //experiment_end_time: Date.now(),
+    //experiment_duration: Date.now() - this.expData.experiment_start_time,
+    ...(this.socket.state === states.CONNECTED || this.socket.state === states.READY) && {
+      participantId: this.socket.participantId,
+      groupLabel: this.socket.groupLabel
+    },
+  };
+
+  // Prepend expData as a separate line
+  const allData = [expDataWithMeta];
+
+  // Add trial data
+  const trialDataArray = flattenData(this.trialData);
+  allData.push(...trialDataArray);
+
+  return allData;
+}
+
+const flattenData = function (trialData) {
+  return flatten(Object.values(trialData)).map(o => 
+    Object.assign({}, 
+      Object.fromEntries(
+        Object.entries(o).filter(
+          ([, value]) => typeof value !== 'function'
+        )
+      )
+    ) // clone the data
+  );
 };
