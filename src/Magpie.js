@@ -379,7 +379,7 @@ export default class Magpie extends EventEmitter {
    * @returns {Object[]}
    */
   getAllData() {
-    return flattenData({
+    return {
       ...this.expData,
       //experiment_end_time: Date.now(),
       //experiment_duration: Date.now() - this.expData.experiment_start_time,
@@ -403,7 +403,7 @@ export default class Magpie extends EventEmitter {
           )
         )
       ) // clone the data
-    });
+    };
   }
 
   /**
