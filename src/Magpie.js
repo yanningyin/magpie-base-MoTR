@@ -380,9 +380,9 @@ export default class Magpie extends EventEmitter {
    */
   getAllData() {
     return flattenData({
-      //...this.expData,
-      //experiment_end_time: Date.now(),
-      //experiment_duration: Date.now() - this.expData.experiment_start_time,
+      ...this.expData,
+      experiment_end_time: Date.now(),
+      experiment_duration: Date.now() - this.expData.experiment_start_time,
       ...((this.socket.state === states.CONNECTED ||
         this.socket.state === states.READY) && {
         participantId: this.socket.participantId
