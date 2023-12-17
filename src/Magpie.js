@@ -253,7 +253,7 @@ export default class Magpie extends EventEmitter {
       this.extractProlificData();
     }
 
-    this.addExpData({ experiment_start_time: Date.now() });
+    //this.addExpData({ experiment_start_time: Date.now() });
 
     if (this.mode === 'debug') {
       window.onunhandledrejection = (event) => {
@@ -379,7 +379,7 @@ export default class Magpie extends EventEmitter {
    * @returns {Object[]}
    */
   getAllData() {
-    return flattenData({
+    return {
       ...this.expData,
       //experiment_end_time: Date.now(),
       //experiment_duration: Date.now() - this.expData.experiment_start_time,
@@ -403,7 +403,7 @@ export default class Magpie extends EventEmitter {
           )
         )
       ) // clone the data
-    });
+    };
   }
 
   /**
