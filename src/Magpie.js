@@ -253,7 +253,7 @@ export default class Magpie extends EventEmitter {
       this.extractProlificData();
     }
 
-    //this.addExpData({ experiment_start_time: Date.now() });
+    this.addExpData({ experiment_start_time: Date.now() });
 
     if (this.mode === 'debug') {
       window.onunhandledrejection = (event) => {
@@ -378,19 +378,31 @@ export default class Magpie extends EventEmitter {
    * @public
    * @returns {Object[]}
    */
-  getAllData_() {
+  getAllData() {
+    this.addExpData({ experiment_end_time: Date.now() });
+    this.addExpData({ experiment_duration: Date.now() - this.expData.experiment_start_time });
+    this.addExpData({
+      ...((this.socket.state === states.CONNECTED ||
+      this.socket.state === states.READY) && {
+      participantId: this.socket.participantId
+       }),
+      ...((this.socket.state === states.CONNECTED ||
+      this.socket.state === states.READY) && {
+      groupLabel: this.socket.groupLabel
+      })
+    })
     return flattenData({
-      ...this.expData,
+      //...this.expData,
       //experiment_end_time: Date.now(),
       //experiment_duration: Date.now() - this.expData.experiment_start_time,
-      ...((this.socket.state === states.CONNECTED ||
-        this.socket.state === states.READY) && {
-        participantId: this.socket.participantId
-      }),
-      ...((this.socket.state === states.CONNECTED ||
-        this.socket.state === states.READY) && {
-        groupLabel: this.socket.groupLabel
-      }),
+      // ...((this.socket.state === states.CONNECTED ||
+      //   this.socket.state === states.READY) && {
+      //   participantId: this.socket.participantId
+      // }),
+      // ...((this.socket.state === states.CONNECTED ||
+      //   this.socket.state === states.READY) && {
+      //   groupLabel: this.socket.groupLabel
+      // }),
       trials: addEmptyColumns(
         flatten(Object.values(this.trialData)).map((o) =>
           Object.assign(
@@ -404,27 +416,6 @@ export default class Magpie extends EventEmitter {
         )
       ) // clone the data
     });
-  }
-  
-  getAllData() {
-    const expDataWithMeta = {
-      ...this.expData,
-      //experiment_end_time: Date.now(),
-      //experiment_duration: Date.now() - this.expData.experiment_start_time,
-      ...(this.socket.state === states.CONNECTED || this.socket.state === states.READY) && {
-        participantId: this.socket.participantId,
-        groupLabel: this.socket.groupLabel
-      },
-    };
-
-    // Prepend expData as a separate line
-    const allData = [expDataWithMeta];
-
-    // Add trial data
-    const trialDataArray = flattenData(this.trialData);
-    allData.push(...trialDataArray);
-
-    return allData;
   }
 
   /**
@@ -548,7 +539,7 @@ const addEmptyColumns = function (trialData) {
   return trialData;
 };
 
-const flattenData_ = function (data) {
+const flattenData = function (data) {
   var trials = data.trials;
   delete data.trials;
 
@@ -576,17 +567,4 @@ const flattenData_ = function (data) {
     // Here the data is the general informatoin besides the trials.
     return merge(t, data);
   });
-};
-
-
-const flattenData = function (trialData) {
-  return flatten(Object.values(trialData)).map(o => 
-    Object.assign({}, 
-      Object.fromEntries(
-        Object.entries(o).filter(
-          ([, value]) => typeof value !== 'function'
-        )
-      )
-    ) // clone the data
-  );
 };
